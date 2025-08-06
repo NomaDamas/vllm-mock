@@ -17,6 +17,9 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
+dependencies = [
+    "vllm>=0.10.0",
+]
 
 [project.urls]
 Homepage = "https://vkehfdl1.github.io/vllm-mock/"
@@ -108,4 +111,3 @@ skip_empty = true
 [tool.coverage.run]
 branch = true
 source = ["src"]
-
