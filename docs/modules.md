@@ -1,0 +1,1 @@
+::: vllm_mock.foo
