@@ -4910,8 +4910,7 @@ name = "vllm-mock"
 version = "0.0.1"
 source = { editable = "." }
 dependencies = [
-    { name = "msgspec" },
-    { name = "pydantic" },
+    { name = "vllm" },
 ]
 
 [package.dev-dependencies]
@@ -4926,14 +4925,10 @@ dev = [
     { name = "ruff" },
     { name = "tox-uv" },
     { name = "ty" },
-    { name = "vllm" },
 ]
 
 [package.metadata]
-requires-dist = [
-    { name = "msgspec", specifier = ">=0.19.0" },
-    { name = "pydantic", specifier = ">=2.11.7" },
-]
+requires-dist = [{ name = "vllm", specifier = ">=0.10.0" }]
 
 [package.metadata.requires-dev]
 dev = [
@@ -4947,7 +4942,6 @@ dev = [
     { name = "ruff", specifier = ">=0.11.5" },
     { name = "tox-uv", specifier = ">=1.11.3" },
     { name = "ty", specifier = ">=0.0.1a16" },
-    { name = "vllm", specifier = ">=0.10.0" },
 ]
 
 [[package]]
