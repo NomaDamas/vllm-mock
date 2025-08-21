@@ -1,7 +1,7 @@
 import pytest
 from vllm.sampling_params import SamplingParams
 
-from src.vllm_mock import LLM
+from vllm_mock import LLM
 
 
 @pytest.fixture

@@ -13,7 +13,7 @@ from vllm.model_executor.layers.quantization import QuantizationMethods
 from vllm.sampling_params import SamplingParams
 from vllm.utils import is_list_of
 
-from src.vllm_mock.outputs import get_request_output
+from vllm_mock.outputs import get_request_output
 
 
 def mock_parse_chat_messages(messages: list[list[ChatCompletionMessageParam]]) -> list[str]:
