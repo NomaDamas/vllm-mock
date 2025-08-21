@@ -1,16 +1,28 @@
 from collections.abc import Sequence
 from collections.abc import Sequence as ABCSequence
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, Optional, Union, cast
+import warnings
 
 from tqdm.auto import tqdm
 from vllm import PromptType, RequestOutput
 from vllm.config import HfOverrides, ModelDType, PoolerConfig, TaskOption, TokenizerMode
+from vllm.entrypoints.chat_utils import ChatCompletionMessageParam, ChatTemplateContentFormatOption
 from vllm.lora.request import LoRARequest
 from vllm.model_executor.guided_decoding.guided_fields import GuidedDecodingRequest, LLMGuidedOptions
 from vllm.model_executor.layers.quantization import QuantizationMethods
 from vllm.sampling_params import SamplingParams
+from vllm.utils import is_list_of
 
 from src.vllm_mock.outputs import get_request_output
+
+
+def mock_parse_chat_messages(messages: list[list[ChatCompletionMessageParam]]) -> list[str]:
+    """
+    Mock method to parse chat messages.
+    This is a placeholder for the actual implementation.
+    """
+    return ["mock prompt" for _ in range(len(messages))]
+
 
 class LLM:
     def __init__(
@@ -123,3 +135,84 @@ class LLM:
             raise NotImplementedError  # TODO: Implement GuidedDecodingRequest handling
         else:
             raise NotImplementedError  # TODO: Implement both LoRARequest and GuidedDecodingRequest handling
+
+    def chat(
+            self,
+            messages: Union[list[ChatCompletionMessageParam],
+            list[list[ChatCompletionMessageParam]]],
+            sampling_params: Optional[Union[SamplingParams,
+            list[SamplingParams]]] = None,
+            use_tqdm: Union[bool, Callable[..., tqdm]] = True,
+            lora_request: Optional[LoRARequest] = None,
+            chat_template: Optional[str] = None,
+            chat_template_content_format: ChatTemplateContentFormatOption = "auto",
+            add_generation_prompt: bool = True,
+            continue_final_message: bool = False,
+            tools: Optional[list[dict[str, Any]]] = None,
+            chat_template_kwargs: Optional[dict[str, Any]] = None,
+            mm_processor_kwargs: Optional[dict[str, Any]] = None,
+    ) -> list[RequestOutput]:
+        # Validate messages input
+        if not isinstance(messages, ABCSequence) or isinstance(messages, (str, bytes)):
+            raise ValueError(
+                "The 'messages' argument must be a sequence of ChatCompletionMessageParam objects or a list of such sequences."
+            )
+
+        if isinstance(sampling_params, ABCSequence):
+            if len(sampling_params) != len(messages):
+                raise ValueError(
+                    "The length of 'sampling_params' must match the number of message sequences provided."
+                )
+
+        if chat_template_content_format not in ["auto", "string", "openai"]:
+            raise ValueError(
+                f"Invalid 'chat_template_content_format': {chat_template_content_format}. "
+                "Must be one of 'auto', 'string', or 'openai'."
+            )
+
+        if chat_template_kwargs is not None and ("enable_thinking" not in chat_template_kwargs.keys()):
+            warnings.warn(
+                "If you are using a reasoning model, consider setting 'enable_thinking' to True in 'chat_template_kwargs' for using reasoning capability.",
+                UserWarning
+            )
+
+        if add_generation_prompt is True and continue_final_message is True:
+            raise ValueError(
+                "The 'continue_final_message' argument cannot be True when 'add_generation_prompt' is True."
+            )
+
+        list_of_messages: list[list[ChatCompletionMessageParam]]
+
+        # Handle multi and single conversations
+        if is_list_of(messages, list):
+            # messages is list[list[...]]
+            list_of_messages = cast(list[list[ChatCompletionMessageParam]],
+                                    messages)
+        else:
+            # messages is list[...]
+            list_of_messages = [
+                cast(list[ChatCompletionMessageParam], messages)
+            ]
+
+        # Validate the message contents
+        for idx, message in enumerate(list_of_messages):
+            for one_message in message:
+                if "role" not in one_message.keys():
+                    raise ValueError(
+                        f"Message at index {idx} is missing the 'role' key. "
+                    )
+                if "content" not in one_message.keys():
+                    raise ValueError(
+                        f"Message at index {idx} is missing the 'content' key. "
+                    )
+
+        mock_prompts = mock_parse_chat_messages(list_of_messages)
+
+        # TODO: Add check on chat_template
+        # TODO: Add check on tools
+        # TODO: Add check on mm_processor_kwargs
+
+        return self.generate(prompts=mock_prompts,
+                             sampling_params=sampling_params,
+                             use_tqdm=use_tqdm,
+                             lora_request=lora_request)
