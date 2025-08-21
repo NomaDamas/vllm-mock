@@ -16,7 +16,7 @@ def sample_chat_messages():
     return [
         {"role": "user", "content": "Hello, how are you?"},
         {"role": "assistant", "content": "I'm doing well, thank you!"},
-        {"role": "user", "content": "What's the weather like?"}
+        {"role": "user", "content": "What's the weather like?"},
     ]
 
 
@@ -24,14 +24,8 @@ def sample_chat_messages():
 def multiple_chat_conversations():
     """Multiple chat conversations for testing."""
     return [
-        [
-            {"role": "user", "content": "Hello"},
-            {"role": "assistant", "content": "Hi there!"}
-        ],
-        [
-            {"role": "user", "content": "How are you?"},
-            {"role": "assistant", "content": "I'm good!"}
-        ]
+        [{"role": "user", "content": "Hello"}, {"role": "assistant", "content": "Hi there!"}],
+        [{"role": "user", "content": "How are you?"}, {"role": "assistant", "content": "I'm good!"}],
     ]
 
 
@@ -93,8 +87,8 @@ class TestLLMGenerate:
         outputs = llm_instance.generate(prompts=prompts)
 
         assert len(outputs) == 3
-        for i, output in enumerate(outputs):
-            assert output.request_id == str(i)
+        for _i, output in enumerate(outputs):
+            assert output.request_id == str(_i)
             assert output.prompt_logprobs is None
             assert len(output.outputs) == 1
             assert output.outputs[0].logprobs is None
@@ -220,16 +214,13 @@ class TestLLMChat:
         outputs = llm_instance.chat(messages=multiple_chat_conversations)
 
         assert len(outputs) == 2
-        for i, output in enumerate(outputs):
+        for _i, output in enumerate(outputs):
             assert output.request_id is not None
             assert len(output.outputs) == 1
 
     def test_multiple_conversations_with_sampling_params_list(self, llm_instance, multiple_chat_conversations):
         """Test multiple conversations with different sampling parameters."""
-        sampling_params = [
-            SamplingParams(logprobs=2),
-            SamplingParams(prompt_logprobs=3)
-        ]
+        sampling_params = [SamplingParams(logprobs=2), SamplingParams(prompt_logprobs=3)]
         outputs = llm_instance.chat(messages=multiple_chat_conversations, sampling_params=sampling_params)
 
         assert len(outputs) == 2
@@ -249,14 +240,14 @@ class TestLLMChat:
             continue_final_message=False,
             tools=[{"type": "function", "name": "test_tool"}],
             chat_template_kwargs=chat_template_kwargs,
-            mm_processor_kwargs={"key": "value"}
+            mm_processor_kwargs={"key": "value"},
         )
 
         assert len(outputs) == 1
 
     def test_chat_invalid_messages_not_sequence(self, llm_instance):
         """Test error when messages is not a proper sequence."""
-        with pytest.raises(ValueError, match="must be a sequence"):
+        with pytest.raises(TypeError, match="must be a sequence"):
             llm_instance.chat(messages="invalid string message")
 
     def test_chat_invalid_sampling_params_length(self, llm_instance, multiple_chat_conversations):
@@ -269,25 +260,18 @@ class TestLLMChat:
     def test_chat_invalid_content_format(self, llm_instance, sample_chat_messages):
         """Test error with invalid chat_template_content_format."""
         with pytest.raises(ValueError, match="Invalid 'chat_template_content_format'"):
-            llm_instance.chat(
-                messages=sample_chat_messages,
-                chat_template_content_format="invalid_format"
-            )
+            llm_instance.chat(messages=sample_chat_messages, chat_template_content_format="invalid_format")
 
     def test_chat_conflicting_generation_params(self, llm_instance, sample_chat_messages):
         """Test error when add_generation_prompt and continue_final_message are both True."""
         with pytest.raises(ValueError, match="cannot be True when 'add_generation_prompt' is True"):
-            llm_instance.chat(
-                messages=sample_chat_messages,
-                add_generation_prompt=True,
-                continue_final_message=True
-            )
+            llm_instance.chat(messages=sample_chat_messages, add_generation_prompt=True, continue_final_message=True)
 
     def test_chat_missing_role_key(self, llm_instance):
         """Test error when message is missing 'role' key."""
         invalid_messages = [
             {"content": "Hello"},  # Missing 'role'
-            {"role": "user", "content": "How are you?"}
+            {"role": "user", "content": "How are you?"},
         ]
 
         with pytest.raises(ValueError, match="missing the 'role' key"):
@@ -297,7 +281,7 @@ class TestLLMChat:
         """Test error when message is missing 'content' key."""
         invalid_messages = [
             {"role": "user"},  # Missing 'content'
-            {"role": "assistant", "content": "I'm good!"}
+            {"role": "assistant", "content": "I'm good!"},
         ]
 
         with pytest.raises(ValueError, match="missing the 'content' key"):
@@ -308,10 +292,7 @@ class TestLLMChat:
         chat_template_kwargs = {"other_key": "value"}  # Missing 'enable_thinking'
 
         with pytest.warns(UserWarning, match="If you are using a reasoning model"):
-            llm_instance.chat(
-                messages=sample_chat_messages,
-                chat_template_kwargs=chat_template_kwargs
-            )
+            llm_instance.chat(messages=sample_chat_messages, chat_template_kwargs=chat_template_kwargs)
 
     def test_chat_with_use_tqdm_false(self, llm_instance, sample_chat_messages):
         """Test chat with use_tqdm set to False."""
@@ -326,7 +307,7 @@ class TestLLMChat:
         try:
             outputs = llm_instance.chat(
                 messages=sample_chat_messages,
-                lora_request=None  # Keeping it None for now since LoRA is not implemented
+                lora_request=None,  # Keeping it None for now since LoRA is not implemented
             )
             assert len(outputs) == 1
         except NotImplementedError:
@@ -340,7 +321,7 @@ class TestLLMChat:
             {"role": "assistant", "content": "I'd be happy to help you with Python! What specific topic?"},
             {"role": "user", "content": "How do I create a list?"},
             {"role": "assistant", "content": "You can create a list using square brackets: my_list = []"},
-            {"role": "user", "content": "Thanks! How about adding items?"}
+            {"role": "user", "content": "Thanks! How about adding items?"},
         ]
 
         sampling_params = SamplingParams(logprobs=2, prompt_logprobs=1)
