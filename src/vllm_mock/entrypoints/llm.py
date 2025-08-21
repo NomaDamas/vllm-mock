@@ -10,8 +10,7 @@ from vllm.model_executor.guided_decoding.guided_fields import GuidedDecodingRequ
 from vllm.model_executor.layers.quantization import QuantizationMethods
 from vllm.sampling_params import SamplingParams
 
-from vllm_mock.outputs import get_request_output
-
+from src.vllm_mock.outputs import get_request_output
 
 class LLM:
     def __init__(
