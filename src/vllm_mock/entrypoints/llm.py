@@ -8,7 +8,6 @@ from vllm import PromptType, RequestOutput
 from vllm.config import HfOverrides, ModelDType, PoolerConfig, TaskOption, TokenizerMode
 from vllm.entrypoints.chat_utils import ChatCompletionMessageParam, ChatTemplateContentFormatOption
 from vllm.lora.request import LoRARequest
-from vllm.model_executor.guided_decoding.guided_fields import GuidedDecodingRequest, LLMGuidedOptions
 from vllm.model_executor.layers.quantization import QuantizationMethods
 from vllm.sampling_params import SamplingParams
 from vllm.utils import is_list_of
@@ -81,14 +80,13 @@ class LLM:
         self.override_pooler_config = override_pooler_config
         self.compilation_config = compilation_config
 
-    def generate(  # noqa: C901
+    def generate(
         self,
         prompts: Union[Union[PromptType, Sequence[PromptType]], Optional[Union[str, list[str]]]] = None,
         sampling_params: Optional[Union[SamplingParams, Sequence[SamplingParams]]] = None,
         prompt_token_ids: Optional[Union[list[int], list[list[int]]]] = None,
         use_tqdm: Union[bool, Callable[..., tqdm]] = True,
         lora_request: Optional[Union[list[LoRARequest], LoRARequest]] = None,
-        guided_options_request: Optional[Union[LLMGuidedOptions, GuidedDecodingRequest]] = None,
         priority: Optional[list[int]] = None,
     ) -> list[RequestOutput]:
         # Check if prompts is a sequence
@@ -123,18 +121,14 @@ class LLM:
                 logprobs = [sp.logprobs for sp in sampling_params]
                 prompt_logprobs = [sp.prompt_logprobs for sp in sampling_params]
 
-        if lora_request is None and guided_options_request is None:
+        if lora_request is None:
             # The normal situation
             request_outputs = []
             for i, (n, logprob, prompt_logprob) in enumerate(zip(n_list, logprobs, prompt_logprobs)):
                 request_outputs.append(get_request_output(str(i), n, logprob, prompt_logprob))
             return request_outputs
-        elif lora_request is not None and guided_options_request is None:
-            raise NotImplementedError  # TODO: Implement LoRARequest handling
-        elif lora_request is None and guided_options_request is not None:
-            raise NotImplementedError  # TODO: Implement GuidedDecodingRequest handling
         else:
-            raise NotImplementedError  # TODO: Implement both LoRARequest and GuidedDecodingRequest handling
+            raise NotImplementedError  # TODO: Implement LoRARequest handling
 
     def chat(  # noqa: C901
         self,
