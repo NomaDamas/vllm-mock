@@ -19,7 +19,7 @@ classifiers = [
 ]
 dependencies = [
     "tqdm>=4.67.1",
-    "vllm>=0.10.0",
+    "vllm>=0.10.2",
 ]
 
 [project.urls]
