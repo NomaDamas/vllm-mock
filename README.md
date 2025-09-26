@@ -1,31 +1,73 @@
 # vllm-mock
 
-[![Release](https://img.shields.io/github/v/release/vkehfdl1/vllm-mock)](https://img.shields.io/github/v/release/vkehfdl1/vllm-mock)
-[![Build status](https://img.shields.io/github/actions/workflow/status/vkehfdl1/vllm-mock/main.yml?branch=main)](https://github.com/vkehfdl1/vllm-mock/actions/workflows/main.yml?query=branch%3Amain)
-[![codecov](https://codecov.io/gh/vkehfdl1/vllm-mock/branch/main/graph/badge.svg)](https://codecov.io/gh/vkehfdl1/vllm-mock)
-[![Commit activity](https://img.shields.io/github/commit-activity/m/vkehfdl1/vllm-mock)](https://img.shields.io/github/commit-activity/m/vkehfdl1/vllm-mock)
-[![License](https://img.shields.io/github/license/vkehfdl1/vllm-mock)](https://img.shields.io/github/license/vkehfdl1/vllm-mock)
-
-Provide mock instance to test vllm without CUDA or any GPUs.
+Provide a mock instance to test vLLM without CUDA or any GPUs.
 
 - **Github repository**: <https://github.com/vkehfdl1/vllm-mock/>
-- **Documentation** <https://vkehfdl1.github.io/vllm-mock/>
 
-## Getting started with your project
+# Features
 
-### 1. Create a New Repository
+- `vllm.LLM.generate` mock
+- `vllm.LLM.chat` mock
 
-First, create a repository on GitHub with the same name as this project, and then run the following commands:
+# Usage
 
-```bash
-git init -b main
-git add .
-git commit -m "init commit"
-git remote add origin git@github.com:vkehfdl1/vllm-mock.git
-git push -u origin main
+It is highly recommended to use the mock instance with `pytest-mock`.
+
+```python
+from vllm_mock import LLM
+from vllm import SamplingParams
+
+def test_vllm(mocker):
+    mock_class = mocker.patch("vllm.LLM")
+    mock_class.return_value = LLM(model="mock-model")
+
+    llm = mock_class()
+    sampling_params = SamplingParams(temperature=0.8, top_p=0.9, logprobs=1)
+    response = llm.generate("Hello, world!", sampling_params=sampling_params)
+    assert isinstance(response[0].outputs[0].text, str)
+
+    chat_response = llm.chat([
+		{"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "Hello, world!"}
+    ], sampling_params=sampling_params)
+    assert isinstance(chat_response[0].outputs[0].text, str)
 ```
 
-### 2. Set Up Your Development Environment
+# Installation
+
+```bash
+pip install vllm-mock pytest-mock
+```
+
+or in a UV environment
+
+```bash
+uv add --dev vllm-mock pytest-mock
+```
+
+## To-do List
+
+- [ ] Mock vLLM API server
+- [ ] Mock Reasoning model features
+- [ ] Mock quantization features
+- [ ] Mock LoRA features
+- [ ] vLM models mock
+- [ ] `vllm.LLM.beam_search` mock
+- [ ] `vllm.LLM.embed` mock
+- [ ] `vllm.LLM.classify` mock
+- [ ] `vllm.LLM.encode` mock
+- [ ] `vllm.LLM.reward` mock
+
+## For Contributors
+
+### 1. Setup Environment
+
+First, clone a repository
+
+```bash
+git clone https://github.com/NomaDamas/vllm-mock.git
+cd vllm-mock
+```
 
 Then, install the environment and the pre-commit hooks with
 
@@ -35,7 +77,7 @@ make install
 
 This will also generate your `uv.lock` file
 
-### 3. Run the pre-commit hooks
+### 2. Run the pre-commit hooks
 
 Initially, the CI/CD pipeline might be failing due to formatting issues. To resolve those run:
 
@@ -43,31 +85,13 @@ Initially, the CI/CD pipeline might be failing due to formatting issues. To reso
 uv run pre-commit run -a
 ```
 
-### 4. Commit the changes
+You can create any issue or PR to support this project. Thank you!
 
-Lastly, commit the changes made by the two steps above to your repository.
 
-```bash
-git add .
-git commit -m 'Fix formatting issues'
-git push origin main
-```
+## Builder of this repository
 
-You are now ready to start development on your project!
-The CI/CD pipeline will be triggered when you open a pull request, merge to main, or when you create a new release.
-
-To finalize the set-up for publishing to PyPI, see [here](https://fpgmaas.github.io/cookiecutter-uv/features/publishing/#set-up-for-pypi).
-For activating the automatic documentation with MkDocs, see [here](https://fpgmaas.github.io/cookiecutter-uv/features/mkdocs/#enabling-the-documentation-on-github).
-To enable the code coverage reports, see [here](https://fpgmaas.github.io/cookiecutter-uv/features/codecov/).
-
-## Releasing a new version
-
-- Create an API Token on [PyPI](https://pypi.org/).
-- Add the API Token to your projects secrets with the name `PYPI_TOKEN` by visiting [this page](https://github.com/vkehfdl1/vllm-mock/settings/secrets/actions/new).
-- Create a [new release](https://github.com/vkehfdl1/vllm-mock/releases/new) on Github.
-- Create a new tag in the form `*.*.*`.
-
-For more details, see [here](https://fpgmaas.github.io/cookiecutter-uv/features/cicd/#how-to-trigger-a-release).
+- [Jeffrey](https://github.com/vkehfdl1) is a creator of this repo. Made this because he desperately needed it for his research.
+- [NomaDamas](https://github.com/NomaDamas) is an AI open-source Hacker House in Seoul, Korea.
 
 ---
 
