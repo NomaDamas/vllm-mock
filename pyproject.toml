@@ -5,12 +5,11 @@ description = "Provide mock instance to test vllm without CUDA or any GPUs."
 authors = [{ name = "NomaDamas", email = "vkehfdl1@gmail.com" }]
 readme = "README.md"
 keywords = ['python']
-requires-python = ">=3.9,<4.0"
+requires-python = ">=3.10,<4.0"
 classifiers = [
     "Intended Audience :: Developers",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -50,13 +49,13 @@ packages = ["src/vllm_mock"]
 
 [tool.ty.environment]
 python = "./.venv"
-python-version = "3.9"
+python-version = "3.10"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
 [tool.ruff]
-target-version = "py39"
+target-version = "py310"
 line-length = 120
 fix = true
 
