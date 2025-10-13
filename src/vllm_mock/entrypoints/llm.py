@@ -1,7 +1,7 @@
 import warnings
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from collections.abc import Sequence as ABCSequence
-from typing import Any, Callable, Optional, Union, cast
+from typing import Any, cast
 
 from tqdm.auto import tqdm
 from vllm import PromptType, RequestOutput
@@ -29,17 +29,17 @@ class LLM:
         model: str,
         *,
         task: TaskOption = "auto",
-        tokenizer: Optional[str] = None,
+        tokenizer: str | None = None,
         tokenizer_mode: TokenizerMode = "auto",
         skip_tokenizer_init: bool = False,
         trust_remote_code: bool = False,
         allowed_local_media_path: str = "",
         tensor_parallel_size: int = 1,
         dtype: ModelDType = "auto",
-        quantization: Optional[QuantizationMethods] = None,
-        revision: Optional[str] = None,
-        tokenizer_revision: Optional[str] = None,
-        seed: Optional[int] = None,
+        quantization: QuantizationMethods | None = None,
+        revision: str | None = None,
+        tokenizer_revision: str | None = None,
+        seed: int | None = None,
         gpu_memory_utilization: float = 0.9,
         swap_space: float = 4,
         cpu_offload_gb: float = 0,
@@ -47,11 +47,11 @@ class LLM:
         max_seq_len_to_capture: int = 8192,
         disable_custom_all_reduce: bool = False,
         disable_async_output_proc: bool = False,
-        hf_token: Optional[Union[bool, str]] = None,
-        hf_overrides: Optional[HfOverrides] = None,
-        mm_processor_kwargs: Optional[dict[str, Any]] = None,
-        override_pooler_config: Optional[PoolerConfig] = None,
-        compilation_config: Optional[Union[int, dict[str, Any]]] = None,
+        hf_token: bool | str | None = None,
+        hf_overrides: HfOverrides | None = None,
+        mm_processor_kwargs: dict[str, Any] | None = None,
+        override_pooler_config: PoolerConfig | None = None,
+        compilation_config: int | dict[str, Any] | None = None,
         **kwargs,
     ) -> None:
         self.model = model
@@ -82,12 +82,12 @@ class LLM:
 
     def generate(
         self,
-        prompts: Union[Union[PromptType, Sequence[PromptType]], Optional[Union[str, list[str]]]] = None,
-        sampling_params: Optional[Union[SamplingParams, Sequence[SamplingParams]]] = None,
-        prompt_token_ids: Optional[Union[list[int], list[list[int]]]] = None,
-        use_tqdm: Union[bool, Callable[..., tqdm]] = True,
-        lora_request: Optional[Union[list[LoRARequest], LoRARequest]] = None,
-        priority: Optional[list[int]] = None,
+        prompts: PromptType | Sequence[PromptType] | str | list[str] | None = None,
+        sampling_params: SamplingParams | Sequence[SamplingParams] | None = None,
+        prompt_token_ids: list[int] | list[list[int]] | None = None,
+        use_tqdm: bool | Callable[..., tqdm] = True,
+        lora_request: list[LoRARequest] | LoRARequest | None = None,
+        priority: list[int] | None = None,
     ) -> list[RequestOutput]:
         # Check if prompts is a sequence
         if prompt_token_ids is not None:
@@ -96,7 +96,7 @@ class LLM:
             )
 
         if prompts is not None:
-            if not isinstance(prompts, ABCSequence) or isinstance(prompts, (str, bytes)):
+            if not isinstance(prompts, ABCSequence) or isinstance(prompts, str | bytes):
                 prompts = [prompts]  # Convert to a list
             input_prompt_length = len(prompts)
         else:
@@ -124,7 +124,7 @@ class LLM:
         if lora_request is None:
             # The normal situation
             request_outputs = []
-            for i, (n, logprob, prompt_logprob) in enumerate(zip(n_list, logprobs, prompt_logprobs)):
+            for i, (n, logprob, prompt_logprob) in enumerate(zip(n_list, logprobs, prompt_logprobs, strict=False)):
                 request_outputs.append(get_request_output(str(i), n, logprob, prompt_logprob))
             return request_outputs
         else:
@@ -132,20 +132,20 @@ class LLM:
 
     def chat(  # noqa: C901
         self,
-        messages: Union[list[ChatCompletionMessageParam], list[list[ChatCompletionMessageParam]]],
-        sampling_params: Optional[Union[SamplingParams, list[SamplingParams]]] = None,
-        use_tqdm: Union[bool, Callable[..., tqdm]] = True,
-        lora_request: Optional[LoRARequest] = None,
-        chat_template: Optional[str] = None,
+        messages: list[ChatCompletionMessageParam] | list[list[ChatCompletionMessageParam]],
+        sampling_params: SamplingParams | list[SamplingParams] | None = None,
+        use_tqdm: bool | Callable[..., tqdm] = True,
+        lora_request: LoRARequest | None = None,
+        chat_template: str | None = None,
         chat_template_content_format: ChatTemplateContentFormatOption = "auto",
         add_generation_prompt: bool = True,
         continue_final_message: bool = False,
-        tools: Optional[list[dict[str, Any]]] = None,
-        chat_template_kwargs: Optional[dict[str, Any]] = None,
-        mm_processor_kwargs: Optional[dict[str, Any]] = None,
+        tools: list[dict[str, Any]] | None = None,
+        chat_template_kwargs: dict[str, Any] | None = None,
+        mm_processor_kwargs: dict[str, Any] | None = None,
     ) -> list[RequestOutput]:
         # Validate messages input
-        if not isinstance(messages, ABCSequence) or isinstance(messages, (str, bytes)):
+        if not isinstance(messages, ABCSequence) or isinstance(messages, str | bytes):
             raise TypeError(
                 "The 'messages' argument must be a sequence of ChatCompletionMessageParam objects or a list of such sequences."
             )
