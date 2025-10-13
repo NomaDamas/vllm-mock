@@ -4,8 +4,8 @@ The outputs for vLLM mock.
 
 from typing import Optional
 
+from vllm.logprobs import Logprob, PromptLogprobs, SampleLogprobs
 from vllm.outputs import CompletionOutput, RequestOutput
-from vllm.sequence import Logprob, PromptLogprobs, SampleLogprobs
 
 
 def get_request_output(
