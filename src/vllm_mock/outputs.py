@@ -2,14 +2,12 @@
 The outputs for vLLM mock.
 """
 
-from typing import Optional
-
 from vllm.logprobs import Logprob, PromptLogprobs, SampleLogprobs
 from vllm.outputs import CompletionOutput, RequestOutput
 
 
 def get_request_output(
-    request_id: str, output_cnt: int, logprobs: Optional[int] = None, prompt_logprobs: Optional[int] = None
+    request_id: str, output_cnt: int, logprobs: int | None = None, prompt_logprobs: int | None = None
 ) -> RequestOutput:
     mock_prompt_token_ids = [1, 2, 3, 4]
     mock_completion_token_ids = [5, 6, 7, 8]
